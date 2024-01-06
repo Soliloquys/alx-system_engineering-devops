@@ -1,0 +1,17 @@
+#!/usr/bin/env bash
+# Display Listening Ports
+
+echo "Active Internet connections (only servers)"
+echo "Proto Recv-Q Send-Q Local Address           Foreign Address         State       PID/Program name"
+
+# Display TCP listening ports
+netstat -tulpn 2>/dev/null | awk '/tcp/ && /LISTEN/ {print $1, $4, $7}' | sed 's/:/ /g' | while read -r proto local foreign pid_program; do
+    program=$(basename "$(grep -E "^\s*$pid_program" /proc/*/cmdline | tr -d '\0' | head -n 1)")
+    echo "$proto      -      -      $local                   $foreign                 LISTEN      $pid_program/$program"
+done
+
+# Display UDP listening ports
+netstat -ulpn 2>/dev/null | awk '/udp/ && /udp/ {print $1, $4, $7}' | sed 's/:/ /g' | while read -r proto local foreign pid_program; do
+    program=$(basename "$(grep -E "^\s*$pid_program" /proc/*/cmdline | tr -d '\0' | head -n 1)")
+    echo "$proto      -      -      $local                   $foreign                                 $pid_program/$program"
+done
